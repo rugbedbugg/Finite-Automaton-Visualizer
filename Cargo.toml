@@ -1,0 +1,6 @@
+[package]
+name = "Finite-Automaton-rs"
+version = "0.1.1"
+edition = "2026"
+
+[dependencies]
