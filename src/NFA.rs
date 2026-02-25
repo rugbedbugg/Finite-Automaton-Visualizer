@@ -1,16 +1,16 @@
-use std::collections::{Hashmap, HashSet};
+use std::collections::{HashMap, HashSet};
 
 pub type State = u32;
-pub type Symmbol = char;
+pub type Symbol = char;
 
 pub struct NFA {
-    Q       : HashSet<State>,
-    alphbet : HashSet<Symbol>,
-    trxn    : HashMap<(State, Option<Symbol>), HashSet<State>>, 
+    pub Q       : HashSet<State>,
+    pub alphbet : HashSet<Symbol>,
+    pub trxn    : HashMap<(State, Option<Symbol>), HashSet<State>>, 
             // Using 'Option' allows for None
             // to be represented as e-transition
-    q0      : State,
-    F       : HashSet<State>,
+    pub q0      : State,
+    pub F       : HashSet<State>,
 }
 // 1. trxn(0, 'a') = {1,2}
 // =================
@@ -23,12 +23,10 @@ pub struct NFA {
 
 impl NFA {
     pub fn epsilon_closure(&self, states: &HashSet<State>) -> HashSet<State> {
-        """
-        epsilon-closure of a state q is the set of all states
-        reachable from q by following zero or more epsilon transitions.
-        """
+        /// epsilon-closure of a state 'q' is the set of all states
+        /// reachable from 'q' by following zero or more epsilon transitions.
         let mut closure = states.clone();
-        let mur stack: Vec<State> = states.iter().cloned().collect();
+        let mut stack: Vec<State> = states.iter().cloned().collect();
 
         while let Some(state) = stack.pop() {
             if let Some(next_states) = self.trxn.get(&(state, None)) {
@@ -41,5 +39,19 @@ impl NFA {
         }
 
         closure
+    }
+
+    pub fn step_over(&self, states: &HashSet<State>, symbol: Symbol) -> HashSet<State> {
+        /// Takes in set of states and one symbol
+        /// Outputs a set of states
+        let mut result = HashSet::new();
+
+        for &state in states {
+            if let Some(next_states) = self.trxn.get(&(state, Some(symbol))) {
+                result.extend(next_states);
+            }
+        }
+
+        result
     }
 }
