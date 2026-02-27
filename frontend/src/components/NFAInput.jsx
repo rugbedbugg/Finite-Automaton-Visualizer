@@ -6,6 +6,7 @@ const NFAInput = ({ onSubmit }) => {
   const [alphabet, setAlphabet] = useState(['a', 'b']);
   const [transitions, setTransitions] = useState([
     { from: 0, symbol: 'a', to: [0, 1] },
+    { from: 0, symbol: 'b', to: [0] },
     { from: 1, symbol: 'b', to: [2] },
   ]);
   const [startState, setStartState] = useState(0);
@@ -22,9 +23,29 @@ const NFAInput = ({ onSubmit }) => {
   };
 
   const handleRemoveState = (state) => {
-    setStates(states.filter(s => s !== state));
-    setTransitions(transitions.filter(t => t.from !== state && !t.to.includes(state)));
-    if (startState === state) setStartState(states[0] || 0);
+    const newStates = states.filter(s => s !== state);
+    setStates(newStates);
+    // Remove transitions that reference this state
+    setTransitions(transitions.filter(t => {
+      // Remove if from state is deleted
+      if (t.from === state) return false;
+      // Remove if any to state is deleted
+      if (t.to.includes(state)) {
+        // Filter out the deleted state from to array
+        const newTo = t.to.filter(s => s !== state);
+        // Only keep transition if there are still target states
+        return newTo.length > 0;
+      }
+      return true;
+    }).map(t => ({
+      ...t,
+      to: t.to.filter(s => s !== state) // Clean up to arrays
+    })));
+    // Update start state if it was deleted
+    if (startState === state) {
+      setStartState(newStates.length > 0 ? newStates[0] : 0);
+    }
+    // Update accept states
     setAcceptStates(acceptStates.filter(s => s !== state));
   };
 
@@ -41,19 +62,29 @@ const NFAInput = ({ onSubmit }) => {
   };
 
   const handleAddTransition = () => {
-    setTransitions([...transitions, { from: states[0] || 0, symbol: alphabet[0] || '', to: [] }]);
+    if (states.length === 0 || alphabet.length === 0) {
+      alert('Please add at least one state and one symbol first');
+      return;
+    }
+    setTransitions([...transitions, { from: states[0], symbol: alphabet[0], to: [] }]);
   };
 
   const handleUpdateTransition = (index, field, value) => {
     const updated = [...transitions];
     if (field === 'to') {
       // Handle comma-separated target states
-      const toStates = value.split(',').map(s => parseInt(s.trim())).filter(s => !isNaN(s));
-      updated[index][field] = toStates;
+      if (value.trim() === '') {
+        updated[index][field] = [];
+      } else {
+        const toStates = value.split(',').map(s => parseInt(s.trim())).filter(s => !isNaN(s));
+        updated[index][field] = toStates;
+      }
     } else if (field === 'from') {
-      updated[index][field] = parseInt(value);
+      const parsedValue = parseInt(value);
+      updated[index][field] = isNaN(parsedValue) ? states[0] || 0 : parsedValue;
     } else {
-      updated[index][field] = value === 'ε' ? null : value;
+      // Handle symbol field
+      updated[index][field] = value === 'ε' || value === '' ? null : value;
     }
     setTransitions(updated);
   };
@@ -71,12 +102,50 @@ const NFAInput = ({ onSubmit }) => {
   };
 
   const handleSubmit = (minimize = false) => {
+    // Validation
+    if (states.length === 0) {
+      alert('Please add at least one state');
+      return;
+    }
+    if (alphabet.length === 0) {
+      alert('Please add at least one symbol to the alphabet');
+      return;
+    }
+    if (!states.includes(startState)) {
+      alert('Start state is not in the states list');
+      return;
+    }
+    
+    // Validate and filter transitions
+    const validTransitions = transitions.filter(t => {
+      // Check if from state exists
+      if (!states.includes(t.from)) {
+        console.warn(`Transition from state ${t.from} removed - state does not exist`);
+        return false;
+      }
+      // Check if symbol is valid (in alphabet or epsilon)
+      if (t.symbol !== null && !alphabet.includes(t.symbol)) {
+        console.warn(`Transition with symbol ${t.symbol} removed - symbol not in alphabet`);
+        return false;
+      }
+      // Check if to states exist
+      const validToStates = t.to.filter(s => states.includes(s));
+      if (validToStates.length === 0) {
+        console.warn(`Transition removed - no valid target states`);
+        return false;
+      }
+      return true;
+    }).map(t => ({
+      ...t,
+      to: t.to.filter(s => states.includes(s)) // Clean up to states
+    }));
+    
     const nfaData = {
       states: states.sort((a, b) => a - b),
       alphabet,
-      transitions: transitions.map(t => [t.from, t.symbol, t.to]),
+      transitions: validTransitions.map(t => [t.from, t.symbol, t.to]),
       start: startState,
-      accept: acceptStates.sort((a, b) => a - b),
+      accept: acceptStates.filter(s => states.includes(s)).sort((a, b) => a - b),
     };
     onSubmit(nfaData, minimize);
   };
