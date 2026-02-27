@@ -2,10 +2,12 @@
 
 A full-stack web application for converting Non-deterministic Finite Automata (NFA) to Deterministic Finite Automata (DFA) with visualization and minimization capabilities.
 
-![Tech Stack](https://img.shields.io/badge/Backend-Rust%20%2B%20Actix--Web-orange)
-![Tech Stack](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-blue)
-![Tech Stack](https://img.shields.io/badge/Styling-TailwindCSS-cyan)
-![Tech Stack](https://img.shields.io/badge/Visualization-React%20Flow-green)
+![Rust](https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white)
+![Actix Web](https://img.shields.io/badge/Actix_Web-000000?style=for-the-badge&logo=rust&logoColor=white)
+![React](https://img.shields.io/badge/React-000000?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Vite](https://img.shields.io/badge/Vite-000000?style=for-the-badge&logo=vite&logoColor=646CFF)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-000000?style=for-the-badge&logo=tailwindcss&logoColor=06B6D4)
+![React Flow](https://img.shields.io/badge/React_Flow-000000?style=for-the-badge&logo=react&logoColor=FF0072)
 
 ## Features
 
