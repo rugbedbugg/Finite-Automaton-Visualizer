@@ -1,7 +1,5 @@
 import { useCallback, useMemo } from 'react';
 import ReactFlow, {
-  MiniMap,
-  Controls,
   Background,
   useNodesState,
   useEdgesState,
@@ -15,15 +13,17 @@ const AutomatonVisualizer = ({ automaton, title }) => {
 
     const { states, transitions, start, accept } = automaton;
     
-    // Create nodes in a circular layout
+    // Create nodes in a circular layout with better spacing
     const nodes = states.map((state, index) => {
       const angle = (2 * Math.PI * index) / states.length;
       // Increase radius based on number of states for better spacing
-      const baseRadius = 150;
-      const radiusIncrement = Math.max(40, states.length * 15);
+      // Offset starting angle to avoid vertical overlap
+      const offsetAngle = angle - Math.PI / 2; // Start from top instead of right
+      const baseRadius = 180;
+      const radiusIncrement = Math.max(50, states.length * 20);
       const radius = baseRadius + radiusIncrement;
-      const x = 300 + radius * Math.cos(angle);
-      const y = 250 + radius * Math.sin(angle);
+      const x = 350 + radius * Math.cos(offsetAngle);
+      const y = 250 + radius * Math.sin(offsetAngle);
 
       const isStart = state === start;
       const isAccept = accept.includes(state);
@@ -34,9 +34,9 @@ const AutomatonVisualizer = ({ automaton, title }) => {
         data: { label: `q${state}` },
         position: { x, y },
         style: {
-          background: isAccept ? '#a855f7' : '#3b82f6',
+          background: isAccept ? '#10b981' : '#6366f1',
           color: 'white',
-          border: isStart ? '4px solid #f59e0b' : '2px solid #1e40af',
+          border: isStart ? '4px solid #f97316' : '2px solid rgba(255,255,255,0.3)',
           borderRadius: '50%',
           width: 60,
           height: 60,
@@ -45,7 +45,7 @@ const AutomatonVisualizer = ({ automaton, title }) => {
           justifyContent: 'center',
           fontWeight: 'bold',
           fontSize: '16px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
         },
       };
     });
@@ -76,35 +76,26 @@ const AutomatonVisualizer = ({ automaton, title }) => {
       }
     });
 
-    // Create edges with better spacing for bidirectional transitions
+    // Create edges with proper routing to avoid overlap
     const edges = [];
-    const edgeSet = new Set();
+    const processedPairs = new Set();
     
     transitionMap.forEach((symbols, key) => {
       const [from, to] = key.split('-').map(Number);
       const label = symbols.join(', ');
       const reverseKey = `${to}-${from}`;
-      const isBidirectional = transitionMap.has(reverseKey) && from !== to;
+      const pairKey = from < to ? `${from}-${to}` : `${to}-${from}`;
       
-      // Determine edge type and curvature to prevent overlap
-      let edgeType = 'smoothstep';
-      let animated = false;
+      // Check if there's a reverse transition
+      const hasReverse = transitionMap.has(reverseKey) && from !== to;
+      const isFirstOfPair = !processedPairs.has(pairKey);
       
-      if (from === to) {
-        // Self-loop
-        edgeType = 'default';
-      } else if (isBidirectional && !edgeSet.has(reverseKey)) {
-        // For bidirectional edges, add curvature to first one
-        edgeType = 'default';
-      }
-      
-      edges.push({
+      let edgeConfig = {
         id: `e${from}-${to}`,
         source: `${from}`,
         target: `${to}`,
         label,
-        type: edgeType,
-        animated,
+        animated: false,
         style: { 
           stroke: '#64748b', 
           strokeWidth: 2.5,
@@ -116,7 +107,7 @@ const AutomatonVisualizer = ({ automaton, title }) => {
         },
         labelBgStyle: { 
           fill: '#ffffff', 
-          fillOpacity: 0.9,
+          fillOpacity: 0.95,
           padding: 4,
         },
         labelBgPadding: [8, 4],
@@ -126,9 +117,25 @@ const AutomatonVisualizer = ({ automaton, title }) => {
           width: 20,
           height: 20,
         },
-      });
+      };
       
-      edgeSet.add(key);
+      if (from === to) {
+        // Self-loop
+        edgeConfig.type = 'default';
+      } else if (hasReverse) {
+        // Bidirectional edges - use bezier with offset
+        edgeConfig.type = 'default';
+        // Add curvature offset for the second edge
+        if (!isFirstOfPair) {
+          edgeConfig.style.strokeDasharray = '0';
+        }
+        processedPairs.add(pairKey);
+      } else {
+        // Single direction - use smooth step
+        edgeConfig.type = 'smoothstep';
+      }
+      
+      edges.push(edgeConfig);
     });
 
     return { nodes, edges };
@@ -158,14 +165,6 @@ const AutomatonVisualizer = ({ automaton, title }) => {
             fitViewOptions={{ padding: 0.2, maxZoom: 1.2 }}
             attributionPosition="bottom-left"
           >
-            <Controls />
-            <MiniMap 
-              nodeColor={(node) => {
-                if (automaton.accept.includes(parseInt(node.id))) return '#a855f7';
-                if (parseInt(node.id) === automaton.start) return '#f59e0b';
-                return '#3b82f6';
-              }}
-            />
             <Background variant="dots" gap={12} size={1} />
           </ReactFlow>
         ) : (
@@ -178,15 +177,15 @@ const AutomatonVisualizer = ({ automaton, title }) => {
         <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
           <div className="flex gap-6 text-sm">
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-blue-600 border-4 border-amber-500"></div>
+              <div className="w-4 h-4 rounded-full bg-indigo-500 border-4 border-orange-500"></div>
               <span className="text-gray-700 dark:text-gray-300">Start State</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-purple-500"></div>
+              <div className="w-4 h-4 rounded-full bg-emerald-500"></div>
               <span className="text-gray-700 dark:text-gray-300">Accept State</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-blue-600"></div>
+              <div className="w-4 h-4 rounded-full bg-indigo-500"></div>
               <span className="text-gray-700 dark:text-gray-300">Regular State</span>
             </div>
           </div>
