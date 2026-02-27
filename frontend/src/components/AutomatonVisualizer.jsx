@@ -48,12 +48,28 @@ const AutomatonVisualizer = ({ automaton, title }) => {
 
     // Group transitions by (from, to) for better labeling
     const transitionMap = new Map();
-    transitions.forEach(([from, symbol, to]) => {
-      const key = `${from}-${to}`;
-      if (!transitionMap.has(key)) {
-        transitionMap.set(key, []);
+    
+    // Handle both NFA (with array of target states) and DFA (single target state)
+    transitions.forEach((transition) => {
+      if (transition.length === 3 && Array.isArray(transition[2])) {
+        // NFA format: [from, symbol, [to1, to2, ...]]
+        const [from, symbol, toStates] = transition;
+        toStates.forEach(to => {
+          const key = `${from}-${to}`;
+          if (!transitionMap.has(key)) {
+            transitionMap.set(key, []);
+          }
+          transitionMap.get(key).push(symbol || 'ε');
+        });
+      } else {
+        // DFA format: [from, symbol, to]
+        const [from, symbol, to] = transition;
+        const key = `${from}-${to}`;
+        if (!transitionMap.has(key)) {
+          transitionMap.set(key, []);
+        }
+        transitionMap.get(key).push(symbol || 'ε');
       }
-      transitionMap.get(key).push(symbol || 'ε');
     });
 
     // Create edges

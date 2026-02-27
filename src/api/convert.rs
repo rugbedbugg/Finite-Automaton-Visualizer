@@ -15,12 +15,27 @@ pub struct NFAInput {
 }
 
 #[derive(Serialize)]
+pub struct NFAOutput {
+    pub states: Vec<State>,
+    pub alphabet: Vec<Symbol>,
+    pub transitions: Vec<(State, Option<Symbol>, Vec<State>)>,
+    pub start: State,
+    pub accept: Vec<State>,
+}
+
+#[derive(Serialize)]
 pub struct DFAOutput {
     pub states: Vec<State>,
     pub alphabet: Vec<Symbol>,
     pub transitions: Vec<(State, Symbol, State)>,
     pub start: State,
     pub accept: Vec<State>,
+}
+
+#[derive(Serialize)]
+pub struct ConversionResponse {
+    pub nfa: NFAOutput,
+    pub dfa: DFAOutput,
 }
 
 pub async fn convert_nfa_to_dfa(input: web::Json<NFAInput>) -> impl Responder {
@@ -35,7 +50,10 @@ pub async fn convert_nfa_to_dfa(input: web::Json<NFAInput>) -> impl Responder {
     
     let nfa = build_nfa(&input);
     let dfa = nfa_to_dfa(&nfa);
-    let response = build_dfa_output(&dfa);
+    let response = ConversionResponse {
+        nfa: build_nfa_output(&input),
+        dfa: build_dfa_output(&dfa),
+    };
     HttpResponse::Ok().json(response)
 }
 
@@ -52,7 +70,10 @@ pub async fn convert_nfa_to_minimized_dfa(input: web::Json<NFAInput>) -> impl Re
     let nfa = build_nfa(&input);
     let dfa = nfa_to_dfa(&nfa);
     let minimized_dfa = minimize_dfa(&dfa);
-    let response = build_dfa_output(&minimized_dfa);
+    let response = ConversionResponse {
+        nfa: build_nfa_output(&input),
+        dfa: build_dfa_output(&minimized_dfa),
+    };
     HttpResponse::Ok().json(response)
 }
 
@@ -67,6 +88,16 @@ fn build_nfa(input: &NFAInput) -> NFA {
         trxn: transitions,
         q0: input.start,
         f: input.accept.iter().cloned().collect(),
+    }
+}
+
+fn build_nfa_output(input: &NFAInput) -> NFAOutput {
+    NFAOutput {
+        states: input.states.clone(),
+        alphabet: input.alphabet.clone(),
+        transitions: input.transitions.clone(),
+        start: input.start,
+        accept: input.accept.clone(),
     }
 }
 
