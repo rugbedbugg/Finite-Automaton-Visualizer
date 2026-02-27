@@ -60,7 +60,25 @@ frontend/
 - Node.js 18+
 - npm
 
-### Backend Setup
+### Quick Start (Recommended)
+
+Run both backend and frontend with one command:
+
+```bash
+./run-dev.sh
+```
+
+This will:
+- Build the backend
+- Install frontend dependencies (if needed)
+- Start both servers
+- Display access URLs
+
+Press `Ctrl+C` to stop both servers.
+
+### Manual Setup
+
+**Backend:**
 
 ```bash
 # Build the backend
@@ -72,7 +90,7 @@ cargo run
 
 The backend server will start on `http://127.0.0.1:8080`
 
-### Frontend Setup
+**Frontend:**
 
 ```bash
 # Navigate to frontend directory
