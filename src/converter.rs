@@ -74,11 +74,3 @@ mod tests {
         // TODO: Add test cases
     }
 }
-// Debug method to log stateful conversion process
-pub fn debug_conversion(nfa: &NFA, dfa: &DFA) {
-    println!("[DEBUG] Input NFA: states={:?}, start={}, accept={:?}, transitions={:?}", 
-        nfa.q, nfa.q0, nfa.f, nfa.trxn);
-    
-    println!("[DEBUG] Converted DFA: states={:?}, start={}, accept={:?}, transitions={:?}", 
-        dfa.q, dfa.q0, dfa.f, dfa.trxn);
-}

@@ -4,6 +4,7 @@ pub type State = u32;
 pub type Symbol = char;
 
 pub struct NFA {
+    #[allow(dead_code)]
     pub q: HashSet<State>,           // Set of states
     pub alphabet: HashSet<Symbol>,   // Alphabet
     pub trxn: HashMap<(State, Option<Symbol>), HashSet<State>>, // Transitions
