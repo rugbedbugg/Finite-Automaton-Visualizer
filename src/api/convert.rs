@@ -2,6 +2,7 @@ use actix_web::{web, Responder, HttpResponse};
 use serde::{Deserialize, Serialize};
 use crate::nfa::{NFA, Symbol, State};
 use crate::converter::nfa_to_dfa;
+use crate::minimizer::minimize_dfa;
 use std::collections::{HashMap, HashSet};
 
 #[derive(Deserialize)]
@@ -35,6 +36,23 @@ pub async fn convert_nfa_to_dfa(input: web::Json<NFAInput>) -> impl Responder {
     let nfa = build_nfa(&input);
     let dfa = nfa_to_dfa(&nfa);
     let response = build_dfa_output(&dfa);
+    HttpResponse::Ok().json(response)
+}
+
+pub async fn convert_nfa_to_minimized_dfa(input: web::Json<NFAInput>) -> impl Responder {
+    // Validate input
+    if let Err(error_msg) = validate_nfa_input(&input) {
+        #[derive(Serialize)]
+        struct ErrorResponse {
+            error: String,
+        }
+        return HttpResponse::BadRequest().json(ErrorResponse { error: error_msg });
+    }
+    
+    let nfa = build_nfa(&input);
+    let dfa = nfa_to_dfa(&nfa);
+    let minimized_dfa = minimize_dfa(&dfa);
+    let response = build_dfa_output(&minimized_dfa);
     HttpResponse::Ok().json(response)
 }
 
