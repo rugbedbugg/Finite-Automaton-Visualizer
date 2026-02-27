@@ -3,7 +3,7 @@ use crate::dfa::DFA;
 use std::collections::{HashMap, HashSet, BTreeSet, VecDeque};
 
 /// Converts an NFA to an equivalent DFA using subset construction
-pub fn NFA_to_DFA(nfa: &NFA) -> DFA {
+pub fn nfa_to_dfa(nfa: &NFA) -> DFA {
     let mut dfa_states: HashMap<BTreeSet<State>, State> = HashMap::new();
     let mut dfa_transitions: HashMap<(State, Symbol), State> = HashMap::new();
     let mut state_counter: State = 0;
@@ -27,7 +27,7 @@ pub fn NFA_to_DFA(nfa: &NFA) -> DFA {
         }
         
         // For each input symbol in the alphabet
-        for &symbol in &nfa.alphbet {
+        for &symbol in &nfa.alphabet {
             // Compute move(nfa_states, symbol)
             let next_states_set = nfa.step_over(&nfa_states.iter().cloned().collect(), symbol);
             
@@ -58,7 +58,7 @@ pub fn NFA_to_DFA(nfa: &NFA) -> DFA {
     
     DFA {
         q: dfa_q,
-        alphbet: nfa.alphbet.clone(),
+        alphabet: nfa.alphabet.clone(),
         trxn: dfa_transitions,
         q0: *dfa_states.get(&start_closure).unwrap(),
         f: dfa_accept_states,
