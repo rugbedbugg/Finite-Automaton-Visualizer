@@ -1,6 +1,11 @@
 # Finite Automaton Visualizer
 
-A Rust-based web service for converting Non-deterministic Finite Automata (NFA) to Deterministic Finite Automata (DFA) using the subset construction algorithm.
+A full-stack web application for converting Non-deterministic Finite Automata (NFA) to Deterministic Finite Automata (DFA) with visualization and minimization capabilities.
+
+![Tech Stack](https://img.shields.io/badge/Backend-Rust%20%2B%20Actix--Web-orange)
+![Tech Stack](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-blue)
+![Tech Stack](https://img.shields.io/badge/Styling-TailwindCSS-cyan)
+![Tech Stack](https://img.shields.io/badge/Visualization-React%20Flow-green)
 
 ## Features
 
@@ -14,40 +19,88 @@ A Rust-based web service for converting Non-deterministic Finite Automata (NFA) 
 
 ## Project Structure
 
+### Backend (Rust)
 ```
 src/
-├── main.rs          # Entry point and HTTP server setup
+├── main.rs          # Entry point and HTTP server setup with CORS
 ├── nfa.rs           # NFA data structure and operations
 ├── dfa.rs           # DFA data structure
 ├── converter.rs     # NFA to DFA conversion algorithm
 ├── minimizer.rs     # DFA minimization algorithm
 └── api/
     ├── mod.rs       # API module definition
-    └── convert.rs   # HTTP endpoint handlers
+    └── convert.rs   # HTTP endpoint handlers with validation
+```
+
+### Frontend (React)
+```
+frontend/
+├── src/
+│   ├── App.jsx                        # Main application component
+│   ├── main.jsx                       # Entry point
+│   ├── index.css                      # Global styles with Tailwind
+│   └── components/
+│       ├── NFAInput.jsx               # Interactive NFA input form
+│       └── AutomatonVisualizer.jsx    # React Flow visualization
+├── public/                            # Static assets
+├── package.json                       # npm dependencies
+├── vite.config.js                     # Vite configuration
+└── tailwind.config.js                 # Tailwind configuration
 ```
 
 ## Installation
 
 ### Prerequisites
 
+**Backend:**
 - Rust (1.70 or later)
 - Cargo
 
-### Build
+**Frontend:**
+- Node.js 18+
+- npm
+
+### Backend Setup
 
 ```bash
+# Build the backend
 cargo build --release
-```
 
-## Usage
-
-### Running the Server
-
-```bash
+# Run the backend server
 cargo run
 ```
 
-The server will start on `http://127.0.0.1:8080`
+The backend server will start on `http://127.0.0.1:8080`
+
+### Frontend Setup
+
+```bash
+# Navigate to frontend directory
+cd frontend
+
+# Install dependencies
+npm install
+
+# Run the development server
+npm run dev
+```
+
+The frontend will be available at `http://localhost:5173`
+
+## Usage
+
+### Using the Web Interface
+
+1. Open `http://localhost:5173` in your browser
+2. Define your NFA using the interactive form:
+   - Add states (numbers)
+   - Define alphabet symbols
+   - Create transitions (use ε for epsilon transitions)
+   - Set start and accept states
+3. Click "Convert to DFA" or "Convert to Minimized DFA"
+4. View the interactive visualization of the result
+
+### Using the API Directly
 
 ### API Endpoints
 
