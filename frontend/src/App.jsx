@@ -2,7 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import NFAInput from './components/NFAInput';
 import AutomatonVisualizer from './components/AutomatonVisualizer';
-import { Activity, Zap } from 'lucide-react';
+import { Activity } from 'lucide-react';
 
 const API_BASE_URL = 'http://127.0.0.1:8080';
 
@@ -50,10 +50,6 @@ function App() {
                   Convert NFA to DFA with minimization
                 </p>
               </div>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-              <Zap className="w-4 h-4" />
-              <span>Powered by Rust + React</span>
             </div>
           </div>
         </div>
@@ -123,14 +119,6 @@ function App() {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="mt-12 border-t border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-            Built with Rust (Actix-web) + React + TailwindCSS + React Flow
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }
