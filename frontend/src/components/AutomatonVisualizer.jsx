@@ -18,9 +18,12 @@ const AutomatonVisualizer = ({ automaton, title }) => {
     // Create nodes in a circular layout
     const nodes = states.map((state, index) => {
       const angle = (2 * Math.PI * index) / states.length;
-      const radius = Math.min(200, states.length * 30);
-      const x = 400 + radius * Math.cos(angle);
-      const y = 300 + radius * Math.sin(angle);
+      // Increase radius based on number of states for better spacing
+      const baseRadius = 150;
+      const radiusIncrement = Math.max(40, states.length * 15);
+      const radius = baseRadius + radiusIncrement;
+      const x = 300 + radius * Math.cos(angle);
+      const y = 250 + radius * Math.sin(angle);
 
       const isStart = state === start;
       const isAccept = accept.includes(state);
@@ -31,9 +34,9 @@ const AutomatonVisualizer = ({ automaton, title }) => {
         data: { label: `q${state}` },
         position: { x, y },
         style: {
-          background: isAccept ? '#9333ea' : '#3b82f6',
+          background: isAccept ? '#a855f7' : '#3b82f6',
           color: 'white',
-          border: isStart ? '4px solid #f59e0b' : 'none',
+          border: isStart ? '4px solid #f59e0b' : '2px solid #1e40af',
           borderRadius: '50%',
           width: 60,
           height: 60,
@@ -42,6 +45,7 @@ const AutomatonVisualizer = ({ automaton, title }) => {
           justifyContent: 'center',
           fontWeight: 'bold',
           fontSize: '16px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
         },
       };
     });
@@ -72,31 +76,59 @@ const AutomatonVisualizer = ({ automaton, title }) => {
       }
     });
 
-    // Create edges
+    // Create edges with better spacing for bidirectional transitions
     const edges = [];
+    const edgeSet = new Set();
+    
     transitionMap.forEach((symbols, key) => {
       const [from, to] = key.split('-').map(Number);
       const label = symbols.join(', ');
+      const reverseKey = `${to}-${from}`;
+      const isBidirectional = transitionMap.has(reverseKey) && from !== to;
+      
+      // Determine edge type and curvature to prevent overlap
+      let edgeType = 'smoothstep';
+      let animated = false;
+      
+      if (from === to) {
+        // Self-loop
+        edgeType = 'default';
+      } else if (isBidirectional && !edgeSet.has(reverseKey)) {
+        // For bidirectional edges, add curvature to first one
+        edgeType = 'default';
+      }
       
       edges.push({
         id: `e${from}-${to}`,
         source: `${from}`,
         target: `${to}`,
         label,
-        type: from === to ? 'default' : 'smoothstep',
-        animated: false,
-        style: { stroke: '#64748b', strokeWidth: 2 },
+        type: edgeType,
+        animated,
+        style: { 
+          stroke: '#64748b', 
+          strokeWidth: 2.5,
+        },
         labelStyle: { 
           fill: '#1e293b', 
           fontWeight: 600,
-          fontSize: 14,
+          fontSize: 13,
         },
-        labelBgStyle: { fill: '#ffffff', fillOpacity: 0.8 },
+        labelBgStyle: { 
+          fill: '#ffffff', 
+          fillOpacity: 0.9,
+          padding: 4,
+        },
+        labelBgPadding: [8, 4],
         markerEnd: {
           type: MarkerType.ArrowClosed,
           color: '#64748b',
+          width: 20,
+          height: 20,
         },
       });
+      
+      edgeSet.add(key);
     });
 
     return { nodes, edges };
@@ -115,7 +147,7 @@ const AutomatonVisualizer = ({ automaton, title }) => {
           </p>
         )}
       </div>
-      <div style={{ height: '600px' }}>
+      <div style={{ height: '500px' }}>
         {automaton ? (
           <ReactFlow
             nodes={nodes}
@@ -123,12 +155,13 @@ const AutomatonVisualizer = ({ automaton, title }) => {
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             fitView
+            fitViewOptions={{ padding: 0.2, maxZoom: 1.2 }}
             attributionPosition="bottom-left"
           >
             <Controls />
             <MiniMap 
               nodeColor={(node) => {
-                if (automaton.accept.includes(parseInt(node.id))) return '#9333ea';
+                if (automaton.accept.includes(parseInt(node.id))) return '#a855f7';
                 if (parseInt(node.id) === automaton.start) return '#f59e0b';
                 return '#3b82f6';
               }}
@@ -149,7 +182,7 @@ const AutomatonVisualizer = ({ automaton, title }) => {
               <span className="text-gray-700 dark:text-gray-300">Start State</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-purple-600"></div>
+              <div className="w-4 h-4 rounded-full bg-purple-500"></div>
               <span className="text-gray-700 dark:text-gray-300">Accept State</span>
             </div>
             <div className="flex items-center gap-2">
