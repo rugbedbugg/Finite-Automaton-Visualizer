@@ -1,0 +1,8 @@
+target/
+frontend/
+.git/
+.gitignore
+README.md
+*.md
+tmp_*
+.env

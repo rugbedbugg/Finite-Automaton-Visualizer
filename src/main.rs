@@ -10,6 +10,13 @@ use api::{convert_nfa_to_dfa, convert_nfa_to_minimized_dfa};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    // Get host and port from environment variables or use defaults
+    let host = std::env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
+    let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string());
+    let bind_address = format!("{}:{}", host, port);
+
+    println!("🚀 Server starting on {}", bind_address);
+
     HttpServer::new(|| {
         let cors = Cors::default()
             .allow_any_origin()
@@ -23,7 +30,7 @@ async fn main() -> std::io::Result<()> {
             .route("/convert", web::post().to(convert_nfa_to_dfa))
             .route("/minimize", web::post().to(convert_nfa_to_minimized_dfa))
     })
-    .bind("127.0.0.1:8080")?
+    .bind(&bind_address)?
     .run()
     .await
 }
