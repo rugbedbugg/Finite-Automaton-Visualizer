@@ -1,0 +1,14 @@
+# Render Blueprint for automatic deployment
+services:
+  - type: web
+    name: finite-automaton-api
+    env: rust
+    plan: free
+    buildCommand: cargo build --release
+    startCommand: ./target/release/Finite-Automaton-Visualizer
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 10000
+    healthCheckPath: /health
